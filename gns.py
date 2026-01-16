@@ -5,8 +5,8 @@ import os
 win_user = "lilia"
 project_name = "projet_test"
 # Chemins WSL vers Windows
-PROJECT_FILE = f"/mnt/c/Users/{win_user}/GNS3/projects/{project_name}/{project_name}.gns3"
-DYNAMIPS_PATH = f"/mnt/c/Users/{win_user}/GNS3/projects/{project_name}/project-files/dynamips"
+PROJECT_FILE = f"C:/Users/{win_user}/GNS3/projects/{project_name}/{project_name}.gns3"
+DYNAMIPS_PATH = f"C:/Users/{win_user}/GNS3/projects/{project_name}/project-files/dynamips"
 
 OSPF_PID = 1
 RIP_NAME = "RIP-ASX"

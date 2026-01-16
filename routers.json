@@ -208,6 +208,16 @@
             "ebgp_peers": [
                 {
                     "peer": "R9",
+                    "peer_as": 20,
+                    "peer_ip": "2001:192:168:8::1/64",
+                    "relation": "peer",
+                    "policy": {
+                        "set_community": "10:300",
+                        "export_filter": "CUSTOMERS_ONLY"
+                    }
+                },
+                {
+                    "peer": "R9",
                     "peer_as": 20
                 }
             ]
@@ -245,6 +255,16 @@
                 "R5"
             ],
             "ebgp_peers": [
+                {
+                    "peer": "R8",
+                    "peer_as": 20,
+                    "peer_ip": "2001:192:168:9::1/64",
+                    "relation": "peer",
+                    "policy": {
+                        "set_community": "10:300",
+                        "export_filter": "CUSTOMERS_ONLY"
+                    }
+                },
                 {
                     "peer": "R8",
                     "peer_as": 20
@@ -286,6 +306,16 @@
             "ebgp_peers": [
                 {
                     "peer": "R7",
+                    "peer_as": 10,
+                    "peer_ip": "2001:192:169:2::1/64",
+                    "relation": "peer",
+                    "policy": {
+                        "set_community": "20:300",
+                        "export_filter": "CUSTOMERS_ONLY"
+                    }
+                },
+                {
+                    "peer": "R7",
                     "peer_as": 10
                 }
             ]
@@ -323,6 +353,16 @@
                 "R11"
             ],
             "ebgp_peers": [
+                {
+                    "peer": "R6",
+                    "peer_as": 10,
+                    "peer_ip": "2001:192:169:4::1/64",
+                    "relation": "peer",
+                    "policy": {
+                        "set_community": "20:300",
+                        "export_filter": "CUSTOMERS_ONLY"
+                    }
+                },
                 {
                     "peer": "R6",
                     "peer_as": 10

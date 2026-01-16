@@ -7,6 +7,26 @@ data = {}
 AS_X, AS_Y = 10, 20
 AS_IGP = {AS_X: "RIP", AS_Y: "OSPF"}
 
+# --- 1. DÉFINITION DES POLITIQUES (L'INTENTION) ---
+# C'est ici qu'on définit les règles techniques pour chaque relation business
+BGP_POLICIES = {
+    "customer": {
+        "description": "Client Downstream",
+        "ingress_community": "LOCAL_AS:100",  # Tag à mettre en entrée
+        "egress_filter": "PERMIT_ALL"         # Quoi envoyer en sortie
+    },
+    "provider": {
+        "description": "Upstream Provider",
+        "ingress_community": "LOCAL_AS:200",
+        "egress_filter": "CUSTOMERS_ONLY"     # N'envoyer que les routes taguées 100
+    },
+    "peer": {
+        "description": "Settlement-Free Peer",
+        "ingress_community": "LOCAL_AS:300",
+        "egress_filter": "CUSTOMERS_ONLY"
+    }
+}
+
 link_counter = {AS_X: 1, AS_Y: 1, "EBGP": 1}
 internal_assignments = {}
 ebgp_assignments = {}
@@ -52,6 +72,23 @@ def generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None):
     # --- Interfaces eBGP ---
     for peer in ebgp_peers:
         peer_name = f"R{peer['peer']}"
+        relation = peer.get("relation", "peer")
+        
+        policy_data = BGP_POLICIES.get(relation, {})
+        
+        community_tag = policy_data.get("ingress_community", "").replace("LOCAL_AS", str(as_number))
+        
+        router["routing"]["ebgp_peers"].append({
+            "peer": peer_name, 
+            "peer_as": peer["peer_as"],
+            "peer_ip": peer_ip,
+            "relation": relation,
+            "policy": {
+                "set_community": community_tag,       # <--- Le résultat (ex: "10:200")
+                "export_filter": policy_data.get("egress_filter") # <--- Le filtre (ex: "CUSTOMERS_ONLY")
+            }
+        })
+        
         link_key = tuple(sorted([name, peer_name]))
         if link_key not in ebgp_assignments:
             sid = link_counter["EBGP"]
