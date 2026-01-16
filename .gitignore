@@ -1,0 +1,18 @@
+# ---- Configs locales ----
+config.json
+config.local.json
+intents.json
+
+# ---- Clés / secrets ----
+*.key
+*.pem
+key.txt
+key.txt.pub
+
+# ---- Python ----
+__pycache__/
+*.pyc
+
+# ---- GNS3 ----
+*.log
+*.tmp
