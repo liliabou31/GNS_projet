@@ -2,11 +2,11 @@ import json
 import os
 
 # --- CONFIGURATION ---
-win_user = "aidaa"
-project_name = "GNS TEST"
+win_user = "Huy Hung"
+project_name = "projet_test"
 # Chemins WSL vers Windows
-PROJECT_FILE = f"/mnt/c/Users/{win_user}/GNS3/projects/{project_name}/{project_name}.gns3"
-DYNAMIPS_PATH = f"/mnt/c/Users/{win_user}/GNS3/projects/{project_name}/project-files/dynamips"
+PROJECT_FILE = f"C:/Users/{win_user}/GNS3/projects/{project_name}/{project_name}.gns3"
+DYNAMIPS_PATH = f"C:/Users/{win_user}/GNS3/projects/{project_name}/project-files/dynamips"
 
 OSPF_PID = 1
 RIP_NAME = "RIP-ASX"
@@ -70,6 +70,7 @@ for router in data:
     with open(uuid_mapping[name], "w", newline='\r\n') as f_out:
         # Configuration de base
         f_out.write(f"hostname {name}\nipv6 unicast-routing\n!\n")
+        f_out.write("ip bgp-community new-format\n!\n") # Activation des communautés BGP
 
         # Loopback
         f_out.write("interface Loopback0\n")
