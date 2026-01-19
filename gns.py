@@ -69,7 +69,10 @@ for router in data:
     
     with open(uuid_mapping[name], "w", newline='\r\n') as f_out:
         # Configuration de base
-        f_out.write(f"hostname {name}\nipv6 unicast-routing\n!\n")
+        f_out.write(f"hostname {name}\n")
+        f_out.write("ipv6 unicast-routing\n")
+        f_out.write("ip bgp-community new-format\n!\n")
+
 
         # Loopback
         f_out.write("interface Loopback0\n")
@@ -109,6 +112,14 @@ for router in data:
         elif router["routing"]["igp"] == "RIP":
             f_out.write(f"ipv6 router rip {RIP_NAME}\nexit\n!\n")
 
+    # --- POLITIQUES (ROUTE-MAPS ET LISTES) ---
+        f_out.write(f"ip as-path access-list 1 permit ^$\n")
+        f_out.write(f"ip community-list standard CLIENT_ONLY permit {router['as_number']}:1\n!\n")
+        f_out.write(f"route-map FROM_CLIENT permit 10\n set community {router['as_number']}:1\n set local-preference 200\n!\n")
+        f_out.write(f"route-map FROM_PROV permit 10\n set community {router['as_number']}:3\n set local-preference 100\n!\n")
+        f_out.write("route-map TO_PROVIDER permit 10\n match community CLIENT_ONLY\n")
+        f_out.write("route-map TO_PROVIDER permit 20\n match as-path 1\n!\n")
+
         # BGP
         f_out.write(f"router bgp {router['as_number']}\n")
         f_out.write(f" bgp router-id {router['router_id_bgp']}\n")
@@ -132,7 +143,7 @@ for router in data:
         for peer in router["routing"]["ibgp_peers"]:
             p_ip = next(x["loopback"] for x in data if x["name"] == peer).split('/')[0]
             f_out.write(f"  neighbor {p_ip} activate\n")
-            # LA COMMANDE DOIT ÊTRE ICI POUR L'IPV6
+            f_out.write(f" neighbor {p_ip} send-community both\n")
             if len(router["routing"]["ebgp_peers"]) > 0:
                 f_out.write(f"  neighbor {p_ip} next-hop-self\n")
 
@@ -141,7 +152,14 @@ for router in data:
             iface = next(i for i in router["interfaces"] if i["peer"] == e_peer["peer"])
             p_ip_ebgp = iface["peer_ip"].split("/")[0]
             f_out.write(f"  neighbor {p_ip_ebgp} activate\n")
-        
+            
+            f_out.write(f"  neighbor {p_ip_ebgp} send-community\n")
+            if e_peer["relation"] == "customer":
+                f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_CLIENT in\n")
+            elif e_peer["relation"] == "provider":
+                f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_PROV in\n")
+                f_out.write(f"  neighbor {p_ip_ebgp} route-map TO_PROVIDER out\n")
+
         f_out.write(f"  network {router['loopback']}\n")
         f_out.write(" exit-address-family\n!\nend\n")
 

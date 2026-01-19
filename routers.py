@@ -49,10 +49,12 @@ def generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None):
         peer_ip = f"{subnet}2/64" if name < peer_name else f"{subnet}1/64"
         router["interfaces"].append({"peer": peer_name, "local_ip": local_ip, "peer_ip": peer_ip, "type": "internal"})
 
-    # --- Interfaces eBGP ---
+# --- Interfaces eBGP ---
     for peer in ebgp_peers:
         peer_name = f"R{peer['peer']}"
         link_key = tuple(sorted([name, peer_name]))
+        
+        # 1. Gestion du subnet (une seule fois)
         if link_key not in ebgp_assignments:
             sid = link_counter["EBGP"]
             ebgp_assignments[link_key] = f"2001:192:170:{sid}::"
@@ -61,22 +63,36 @@ def generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None):
         subnet = ebgp_assignments[link_key]
         local_ip = f"{subnet}1/64" if name < peer_name else f"{subnet}2/64"
         peer_ip = f"{subnet}2/64" if name < peer_name else f"{subnet}1/64"
-        router["interfaces"].append({"peer": peer_name, "local_ip": local_ip, "peer_ip": peer_ip, "type": "ebgp"})
-        router["routing"]["ebgp_peers"].append({"peer": peer_name, "peer_as": peer["peer_as"]})
+        
+        # 2. Ajout de l'interface physique 
+        router["interfaces"].append({
+            "peer": peer_name, 
+            "local_ip": local_ip, 
+            "peer_ip": peer_ip, 
+            "type": "ebgp"
+        })
+        
+        # 3. Ajout du voisin BGP avec sa relation (UNE SEULE FOIS)
+        router["routing"]["ebgp_peers"].append({
+            "peer": peer_name, 
+            "peer_as": peer["peer_as"],
+            "relation": peer.get("relation", "provider")
+        })
 
+    # FIN DE LA FONCTION : On enregistre le routeur dans le dictionnaire global
     data[name] = router
 
 # --- Appels de configuration ---
 generate_router(1, AS_X, ibgp_peers=[2,3])
 generate_router(2, AS_X, ibgp_peers=[1,3,4])
 generate_router(3, AS_X, ibgp_peers=[1,2,5])
-generate_router(4, AS_X, ibgp_peers=[2,5,7])
+generate_router(4, AS_X, ibgp_peers=[2,5,6,7])
 generate_router(5, AS_X, ibgp_peers=[3,4,6,7])
-generate_router(6, AS_X, ibgp_peers=[4,5], ebgp_peers=[{"peer": 9, "peer_as": AS_Y}])
-generate_router(7, AS_X, ibgp_peers=[4,5], ebgp_peers=[{"peer": 8, "peer_as": AS_Y}])
+generate_router(6, AS_X, ibgp_peers=[4,5], ebgp_peers=[{"peer": 9, "peer_as": AS_Y, "relation": "provider"}])
+generate_router(7, AS_X, ibgp_peers=[4,5], ebgp_peers=[{"peer": 8, "peer_as": AS_Y, "relation": "provider"}])
 
-generate_router(8, AS_Y, ibgp_peers=[10,11], ebgp_peers=[{"peer": 7, "peer_as": AS_X}])
-generate_router(9, AS_Y, ibgp_peers=[10,11], ebgp_peers=[{"peer": 6, "peer_as": AS_X}])
+generate_router(8, AS_Y, ibgp_peers=[10,11], ebgp_peers=[{"peer": 7, "peer_as": AS_X, "relation": "customer"}])
+generate_router(9, AS_Y, ibgp_peers=[10,11], ebgp_peers=[{"peer": 6, "peer_as": AS_X, "relation": "customer"}]) 
 generate_router(10, AS_Y, ibgp_peers=[8,9,11,12])
 generate_router(11, AS_Y, ibgp_peers=[8,9,10,13])
 generate_router(12, AS_Y, ibgp_peers=[10,13,14])

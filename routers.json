@@ -116,9 +116,15 @@
                 "type": "internal"
             },
             {
-                "peer": "R7",
+                "peer": "R6",
                 "local_ip": "2001:192:168:7::1/64",
                 "peer_ip": "2001:192:168:7::2/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R7",
+                "local_ip": "2001:192:168:8::1/64",
+                "peer_ip": "2001:192:168:8::2/64",
                 "type": "internal"
             }
         ],
@@ -127,6 +133,7 @@
             "ibgp_peers": [
                 "R2",
                 "R5",
+                "R6",
                 "R7"
             ],
             "ebgp_peers": []
@@ -152,14 +159,14 @@
             },
             {
                 "peer": "R6",
-                "local_ip": "2001:192:168:8::1/64",
-                "peer_ip": "2001:192:168:8::2/64",
+                "local_ip": "2001:192:168:9::1/64",
+                "peer_ip": "2001:192:168:9::2/64",
                 "type": "internal"
             },
             {
                 "peer": "R7",
-                "local_ip": "2001:192:168:9::1/64",
-                "peer_ip": "2001:192:168:9::2/64",
+                "local_ip": "2001:192:168:10::1/64",
+                "peer_ip": "2001:192:168:10::2/64",
                 "type": "internal"
             }
         ],
@@ -182,14 +189,14 @@
         "interfaces": [
             {
                 "peer": "R4",
-                "local_ip": "2001:192:168:10::2/64",
-                "peer_ip": "2001:192:168:10::1/64",
+                "local_ip": "2001:192:168:7::2/64",
+                "peer_ip": "2001:192:168:7::1/64",
                 "type": "internal"
             },
             {
                 "peer": "R5",
-                "local_ip": "2001:192:168:8::2/64",
-                "peer_ip": "2001:192:168:8::1/64",
+                "local_ip": "2001:192:168:9::2/64",
+                "peer_ip": "2001:192:168:9::1/64",
                 "type": "internal"
             },
             {
@@ -208,7 +215,8 @@
             "ebgp_peers": [
                 {
                     "peer": "R9",
-                    "peer_as": 20
+                    "peer_as": 20,
+                    "relation": "provider"
                 }
             ]
         }
@@ -221,14 +229,14 @@
         "interfaces": [
             {
                 "peer": "R4",
-                "local_ip": "2001:192:168:7::2/64",
-                "peer_ip": "2001:192:168:7::1/64",
+                "local_ip": "2001:192:168:8::2/64",
+                "peer_ip": "2001:192:168:8::1/64",
                 "type": "internal"
             },
             {
                 "peer": "R5",
-                "local_ip": "2001:192:168:9::2/64",
-                "peer_ip": "2001:192:168:9::1/64",
+                "local_ip": "2001:192:168:10::2/64",
+                "peer_ip": "2001:192:168:10::1/64",
                 "type": "internal"
             },
             {
@@ -247,7 +255,8 @@
             "ebgp_peers": [
                 {
                     "peer": "R8",
-                    "peer_as": 20
+                    "peer_as": 20,
+                    "relation": "provider"
                 }
             ]
         }
@@ -286,7 +295,8 @@
             "ebgp_peers": [
                 {
                     "peer": "R7",
-                    "peer_as": 10
+                    "peer_as": 10,
+                    "relation": "customer"
                 }
             ]
         }
@@ -325,7 +335,8 @@
             "ebgp_peers": [
                 {
                     "peer": "R6",
-                    "peer_as": 10
+                    "peer_as": 10,
+                    "relation": "customer"
                 }
             ]
         }
