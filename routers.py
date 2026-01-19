@@ -83,21 +83,21 @@ def generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None):
     data[name] = router
 
 # --- Appels de configuration ---
-generate_router(1, AS_X, ibgp_peers=[2,3])
-generate_router(2, AS_X, ibgp_peers=[1,3,4])
+generate_router(1, AS_X, ibgp_peers=[2,3,5])
+generate_router(2, AS_X, ibgp_peers=[1,3,4,5])
 generate_router(3, AS_X, ibgp_peers=[1,2,5])
 generate_router(4, AS_X, ibgp_peers=[2,5,6,7])
-generate_router(5, AS_X, ibgp_peers=[3,4,6,7])
+generate_router(5, AS_X, ibgp_peers=[1,2,3,4,6,7]) #Router Reflector 
 generate_router(6, AS_X, ibgp_peers=[4,5], ebgp_peers=[{"peer": 9, "peer_as": AS_Y, "relation": "provider"}])
 generate_router(7, AS_X, ibgp_peers=[4,5], ebgp_peers=[{"peer": 8, "peer_as": AS_Y, "relation": "provider"}])
 
 generate_router(8, AS_Y, ibgp_peers=[10,11], ebgp_peers=[{"peer": 7, "peer_as": AS_X, "relation": "customer"}])
 generate_router(9, AS_Y, ibgp_peers=[10,11], ebgp_peers=[{"peer": 6, "peer_as": AS_X, "relation": "customer"}]) 
-generate_router(10, AS_Y, ibgp_peers=[8,9,11,12])
+generate_router(10, AS_Y, ibgp_peers=[8,9,11,12,13,14])
 generate_router(11, AS_Y, ibgp_peers=[8,9,10,13])
 generate_router(12, AS_Y, ibgp_peers=[10,13,14])
-generate_router(13, AS_Y, ibgp_peers=[11,12,14])
-generate_router(14, AS_Y, ibgp_peers=[12,13])
+generate_router(13, AS_Y, ibgp_peers=[10,11,12,14])
+generate_router(14, AS_Y, ibgp_peers=[10,12,13])
 
 with open(JSON_FILE, "w") as f:
     json.dump(list(data.values()), f, indent=4)

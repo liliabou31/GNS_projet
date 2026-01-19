@@ -22,11 +22,12 @@ def get_real_topology():
         n2 = nodes[link['nodes'][1]['node_id']]
         p2 = link['nodes'][1]['label']['text']
         
-        # Nettoyage du nom de l'interface (ex: f0/0 -> FastEthernet0/0)
+        # Nettoyage robuste du nom de l'interface
         def fix_if_name(name):
+            name = name.lower()
             if name.startswith('f'): return name.replace('f', 'FastEthernet')
             if name.startswith('g'): return name.replace('g', 'GigabitEthernet')
-            if name.startswith('Gi'): return name.replace('Gi', 'GigabitEthernet')
+            if name.startswith('gi'): return name.replace('gi', 'GigabitEthernet')
             return name
 
         if n1 not in links_db: links_db[n1] = {}
@@ -36,8 +37,8 @@ def get_real_topology():
     return links_db
 
 def map_uuids():
-    """ Associe le nom du routeur au chemin du fichier config sur le disque """
     mapping = {}
+    if not os.path.exists(DYNAMIPS_PATH): return mapping
     for uuid_dir in os.listdir(DYNAMIPS_PATH):
         cfg_path = os.path.join(DYNAMIPS_PATH, uuid_dir, "configs")
         if os.path.isdir(cfg_path):
@@ -73,7 +74,6 @@ for router in data:
         f_out.write("ipv6 unicast-routing\n")
         f_out.write("ip bgp-community new-format\n!\n")
 
-
         # Loopback
         f_out.write("interface Loopback0\n")
         f_out.write(f" ipv6 address {router['loopback']}\n")
@@ -83,28 +83,21 @@ for router in data:
             f_out.write(f" ipv6 ospf {OSPF_PID} area 0\n")
         f_out.write("!\n")
 
-        # Interfaces Physiques (Détectées via .gns3)
+        # Interfaces Physiques
         for iface_json in router["interfaces"]:
             peer_name = iface_json["peer"]
-            
-            # On récupère le nom de l'interface physique réelle
             if name in real_links and peer_name in real_links[name]:
                 real_if_name = real_links[name][peer_name]
-                
                 f_out.write(f"interface {real_if_name}\n")
                 f_out.write(" no ip address\n ipv6 enable\n")
                 f_out.write(f" ipv6 address {iface_json['local_ip']}\n")
                 f_out.write(" no shutdown\n")
-                
-                # Activation IGP (seulement si interne)
                 if iface_json.get("type") == "internal":
                     if router["routing"]["igp"] == "RIP":
                         f_out.write(f" ipv6 rip {RIP_NAME} enable\n")
                     elif router["routing"]["igp"] == "OSPF":
                         f_out.write(f" ipv6 ospf {OSPF_PID} area 0\n")
                 f_out.write("!\n")
-            else:
-                print(f"  [!] Attention: Pas de lien physique trouvé entre {name} et {peer_name}")
 
         # Processus IGP
         if router["routing"]["igp"] == "OSPF":
@@ -112,8 +105,8 @@ for router in data:
         elif router["routing"]["igp"] == "RIP":
             f_out.write(f"ipv6 router rip {RIP_NAME}\nexit\n!\n")
 
-    # --- POLITIQUES (ROUTE-MAPS ET LISTES) ---
-        f_out.write(f"ip as-path access-list 1 permit ^$\n")
+        # POLITIQUES
+        f_out.write("ip as-path access-list 1 permit ^$\n")
         f_out.write(f"ip community-list standard CLIENT_ONLY permit {router['as_number']}:1\n!\n")
         f_out.write(f"route-map FROM_CLIENT permit 10\n set community {router['as_number']}:1\n set local-preference 200\n!\n")
         f_out.write(f"route-map FROM_PROV permit 10\n set community {router['as_number']}:3\n set local-preference 100\n!\n")
@@ -122,37 +115,41 @@ for router in data:
 
         # BGP
         f_out.write(f"router bgp {router['as_number']}\n")
+        f_out.write(" bgp fast-external-fallover\n")
         f_out.write(f" bgp router-id {router['router_id_bgp']}\n")
+        f_out.write(" bgp timers 5 15\n")
         f_out.write(" no bgp default ipv4-unicast\n")
 
-        # 1. Définition des voisins (Remote-AS et Source)
+        # IBGP
         for peer in router["routing"]["ibgp_peers"]:
             p_ip = next(x["loopback"] for x in data if x["name"] == peer).split('/')[0]
             f_out.write(f" neighbor {p_ip} remote-as {router['as_number']}\n")
             f_out.write(f" neighbor {p_ip} update-source Loopback0\n")
 
+        # EBGP
         for e_peer in router["routing"]["ebgp_peers"]:
             iface = next(i for i in router["interfaces"] if i["peer"] == e_peer["peer"])
             p_ip_ebgp = iface["peer_ip"].split("/")[0]
             f_out.write(f" neighbor {p_ip_ebgp} remote-as {e_peer['peer_as']}\n")
 
-        # 2. Activation dans l'Address-family (C'est ICI que tout se joue)
+        # --- CORRECTION ESPACES ET ACTIVATION ---
         f_out.write(" address-family ipv6 unicast\n")
         
-        # Activation iBGP + Correction Next-Hop
         for peer in router["routing"]["ibgp_peers"]:
             p_ip = next(x["loopback"] for x in data if x["name"] == peer).split('/')[0]
             f_out.write(f"  neighbor {p_ip} activate\n")
-            f_out.write(f" neighbor {p_ip} send-community both\n")
+
+            if router["name"] == "R5" or router["name"] == "R10":
+                f_out.write(f"  neighbor {p_ip} route-reflector-client\n")
+                
+            f_out.write(f"  neighbor {p_ip} send-community both\n")
             if len(router["routing"]["ebgp_peers"]) > 0:
                 f_out.write(f"  neighbor {p_ip} next-hop-self\n")
 
-        # Activation eBGP
         for e_peer in router["routing"]["ebgp_peers"]:
             iface = next(i for i in router["interfaces"] if i["peer"] == e_peer["peer"])
             p_ip_ebgp = iface["peer_ip"].split("/")[0]
             f_out.write(f"  neighbor {p_ip_ebgp} activate\n")
-            
             f_out.write(f"  neighbor {p_ip_ebgp} send-community\n")
             if e_peer["relation"] == "customer":
                 f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_CLIENT in\n")
@@ -163,4 +160,4 @@ for router in data:
         f_out.write(f"  network {router['loopback']}\n")
         f_out.write(" exit-address-family\n!\nend\n")
 
-print("\n[FIN] Toutes les configurations ont été injectées dans les dossiers Windows.")
+print("\n[FIN] Déploiement terminé.")
