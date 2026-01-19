@@ -10,7 +10,7 @@ AS_IGP = {AS_X: "RIP", AS_Y: "OSPF"}
 link_counter = {AS_X: 1, AS_Y: 1, "EBGP": 1}
 internal_assignments = {}
 ebgp_assignments = {}
-
+dd
 def generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None):
     global link_counter
     if ibgp_peers is None: ibgp_peers = []
