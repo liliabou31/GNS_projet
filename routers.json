@@ -232,6 +232,12 @@
                 "local_ip": "2001:192:170:1::1/64",
                 "peer_ip": "2001:192:170:1::2/64",
                 "type": "ebgp"
+            },
+            {
+                "peer": "R16",
+                "local_ip": "2001:192:170:2::2/64",
+                "peer_ip": "2001:192:170:2::1/64",
+                "type": "ebgp"
             }
         ],
         "routing": {
@@ -245,6 +251,11 @@
                     "peer": "R9",
                     "peer_as": 20,
                     "relation": "provider"
+                },
+                {
+                    "peer": "R16",
+                    "peer_as": 30,
+                    "relation": "peer"
                 }
             ]
         }
@@ -269,8 +280,8 @@
             },
             {
                 "peer": "R8",
-                "local_ip": "2001:192:170:2::1/64",
-                "peer_ip": "2001:192:170:2::2/64",
+                "local_ip": "2001:192:170:3::1/64",
+                "peer_ip": "2001:192:170:3::2/64",
                 "type": "ebgp"
             }
         ],
@@ -309,8 +320,8 @@
             },
             {
                 "peer": "R7",
-                "local_ip": "2001:192:170:2::2/64",
-                "peer_ip": "2001:192:170:2::1/64",
+                "local_ip": "2001:192:170:3::2/64",
+                "peer_ip": "2001:192:170:3::1/64",
                 "type": "ebgp"
             }
         ],
@@ -352,6 +363,12 @@
                 "local_ip": "2001:192:170:1::2/64",
                 "peer_ip": "2001:192:170:1::1/64",
                 "type": "ebgp"
+            },
+            {
+                "peer": "R18",
+                "local_ip": "2001:192:170:4::2/64",
+                "peer_ip": "2001:192:170:4::1/64",
+                "type": "ebgp"
             }
         ],
         "routing": {
@@ -364,6 +381,11 @@
                 {
                     "peer": "R6",
                     "peer_as": 10,
+                    "relation": "customer"
+                },
+                {
+                    "peer": "R18",
+                    "peer_as": 30,
                     "relation": "customer"
                 }
             ]
@@ -575,6 +597,240 @@
                 "R10",
                 "R12",
                 "R13"
+            ],
+            "ebgp_peers": []
+        }
+    },
+    {
+        "name": "R15",
+        "as_number": 30,
+        "router_id_bgp": "3.1.1.15",
+        "loopback": "2001:192:100:255::15/128",
+        "interfaces": [
+            {
+                "peer": "R16",
+                "local_ip": "2001:192:171:1::1/64",
+                "peer_ip": "2001:192:171:1::2/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R17",
+                "local_ip": "2001:192:171:2::1/64",
+                "peer_ip": "2001:192:171:2::2/64",
+                "type": "internal"
+            }
+        ],
+        "routing": {
+            "igp": "RIP",
+            "ibgp_peers": [
+                "R16",
+                "R17"
+            ],
+            "ebgp_peers": []
+        }
+    },
+    {
+        "name": "R16",
+        "as_number": 30,
+        "router_id_bgp": "3.1.1.16",
+        "loopback": "2001:192:100:255::16/128",
+        "interfaces": [
+            {
+                "peer": "R15",
+                "local_ip": "2001:192:171:1::2/64",
+                "peer_ip": "2001:192:171:1::1/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R17",
+                "local_ip": "2001:192:171:3::1/64",
+                "peer_ip": "2001:192:171:3::2/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R18",
+                "local_ip": "2001:192:171:4::1/64",
+                "peer_ip": "2001:192:171:4::2/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R6",
+                "local_ip": "2001:192:170:2::1/64",
+                "peer_ip": "2001:192:170:2::2/64",
+                "type": "ebgp"
+            }
+        ],
+        "routing": {
+            "igp": "RIP",
+            "ibgp_peers": [
+                "R15",
+                "R17",
+                "R18"
+            ],
+            "ebgp_peers": [
+                {
+                    "peer": "R6",
+                    "peer_as": 10,
+                    "relation": "peer"
+                }
+            ]
+        }
+    },
+    {
+        "name": "R17",
+        "as_number": 30,
+        "router_id_bgp": "3.1.1.17",
+        "loopback": "2001:192:100:255::17/128",
+        "interfaces": [
+            {
+                "peer": "R15",
+                "local_ip": "2001:192:171:2::2/64",
+                "peer_ip": "2001:192:171:2::1/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R16",
+                "local_ip": "2001:192:171:3::2/64",
+                "peer_ip": "2001:192:171:3::1/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R19",
+                "local_ip": "2001:192:171:5::1/64",
+                "peer_ip": "2001:192:171:5::2/64",
+                "type": "internal"
+            }
+        ],
+        "routing": {
+            "igp": "RIP",
+            "ibgp_peers": [
+                "R15",
+                "R16",
+                "R19"
+            ],
+            "ebgp_peers": []
+        }
+    },
+    {
+        "name": "R18",
+        "as_number": 30,
+        "router_id_bgp": "3.1.1.18",
+        "loopback": "2001:192:100:255::18/128",
+        "interfaces": [
+            {
+                "peer": "R15",
+                "local_ip": "2001:192:171:6::2/64",
+                "peer_ip": "2001:192:171:6::1/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R16",
+                "local_ip": "2001:192:171:4::2/64",
+                "peer_ip": "2001:192:171:4::1/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R17",
+                "local_ip": "2001:192:171:7::2/64",
+                "peer_ip": "2001:192:171:7::1/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R19",
+                "local_ip": "2001:192:171:8::1/64",
+                "peer_ip": "2001:192:171:8::2/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R20",
+                "local_ip": "2001:192:171:9::1/64",
+                "peer_ip": "2001:192:171:9::2/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R7",
+                "local_ip": "2001:192:170:5::1/64",
+                "peer_ip": "2001:192:170:5::2/64",
+                "type": "ebgp"
+            }
+        ],
+        "routing": {
+            "igp": "RIP",
+            "ibgp_peers": [
+                "R15",
+                "R16",
+                "R17",
+                "R19",
+                "R20"
+            ],
+            "ebgp_peers": [
+                {
+                    "peer": "R7",
+                    "peer_as": 10,
+                    "relation": "provider"
+                }
+            ]
+        }
+    },
+    {
+        "name": "R19",
+        "as_number": 30,
+        "router_id_bgp": "3.1.1.19",
+        "loopback": "2001:192:100:255::19/128",
+        "interfaces": [
+            {
+                "peer": "R17",
+                "local_ip": "2001:192:171:5::2/64",
+                "peer_ip": "2001:192:171:5::1/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R18",
+                "local_ip": "2001:192:171:8::2/64",
+                "peer_ip": "2001:192:171:8::1/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R20",
+                "local_ip": "2001:192:171:10::1/64",
+                "peer_ip": "2001:192:171:10::2/64",
+                "type": "internal"
+            }
+        ],
+        "routing": {
+            "igp": "RIP",
+            "ibgp_peers": [
+                "R17",
+                "R18",
+                "R20"
+            ],
+            "ebgp_peers": []
+        }
+    },
+    {
+        "name": "R20",
+        "as_number": 30,
+        "router_id_bgp": "3.1.1.20",
+        "loopback": "2001:192:100:255::20/128",
+        "interfaces": [
+            {
+                "peer": "R18",
+                "local_ip": "2001:192:171:9::2/64",
+                "peer_ip": "2001:192:171:9::1/64",
+                "type": "internal"
+            },
+            {
+                "peer": "R19",
+                "local_ip": "2001:192:171:10::2/64",
+                "peer_ip": "2001:192:171:10::1/64",
+                "type": "internal"
+            }
+        ],
+        "routing": {
+            "igp": "RIP",
+            "ibgp_peers": [
+                "R18",
+                "R19"
             ],
             "ebgp_peers": []
         }
