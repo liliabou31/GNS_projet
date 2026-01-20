@@ -108,16 +108,22 @@ for router in data:
         # POLITIQUES
         f_out.write("ip as-path access-list 1 permit ^$\n")
         f_out.write(f"ip community-list standard CLIENT_ONLY permit {router['as_number']}:1\n!\n") # identifie les routes des clients
+
         f_out.write(f"route-map FROM_CLIENT permit 10\n set community {router['as_number']}:1\n set local-preference 200\n!\n")
         f_out.write(f"route-map FROM_PROV permit 10\n set community {router['as_number']}:3\n set local-preference 100\n!\n")
         f_out.write(f"route-map FROM_PEER permit 10\n set community {router['as_number']}:2\n set local-preference 150\n!\n")
-        f_out.write("route-map TO_PROVIDER permit 10\n match community CLIENT_ONLY\n") # envoie a peers et providers mes routes et routes de mes clients
+
+        # providers mes routes et routes de mes clients
+        f_out.write("route-map TO_PROVIDER permit 10\n match community CLIENT_ONLY\n") 
         f_out.write("route-map TO_PROVIDER permit 20\n match as-path 1\n!\n")
-        f_out.write("route-map TO_PEER permit 10\n match community CLIENT_ONLY\n") 
-        f_out.write("route-map TO_PEER permit 20\n match as-path 1\n!\n")
+        
+        # envoie a peers mes routes et routes de mes clients
+        f_out.write("route-map TO_PEER permit 10\n match community CLIENT_ONLY\n") # Est ce que cette route appartient à un de mes clients ?
+        f_out.write("route-map TO_PEER permit 20\n match as-path 1\n!\n") # Est-ce que c'est ma propre route (créée par moi-même) ?
+        f_out.write("route-map TO_PEER permit 30\n!\n") # Il laisse tout passer
+
         f_out.write("route-map TO_CLIENT permit 10\n!\n") # on envoie tout a nos clients
 
-        # BGP
         # BGP
         f_out.write(f"router bgp {router['as_number']}\n")
         f_out.write(" bgp fast-external-fallover\n")
@@ -163,7 +169,7 @@ for router in data:
                 f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_PROV in\n")
                 f_out.write(f"  neighbor {p_ip_ebgp} route-map TO_PROVIDER out\n")
             elif e_peer["relation"] == "peer":
-                f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_CLIENT in\n") # Réutilisé pour marquer community :1
+                f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_PEER in\n") # Réutilisé pour marquer community :1
                 f_out.write(f"  neighbor {p_ip_ebgp} route-map TO_PEER out\n")
 
         f_out.write(f"  network {router['loopback']}\n")
