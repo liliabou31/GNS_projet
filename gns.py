@@ -143,7 +143,7 @@ for router in data:
         for peer in router["routing"]["ibgp_peers"]:
             p_ip = next(x["loopback"] for x in data if x["name"] == peer).split('/')[0]
             f_out.write(f"  neighbor {p_ip} activate\n")
-            if router["name"] in ["R5", "R10"]:
+            if router["name"] in ["R5", "R10","R18"]:
                 f_out.write(f"  neighbor {p_ip} route-reflector-client\n")
             f_out.write(f"  neighbor {p_ip} send-community both\n")
             if len(router["routing"]["ebgp_peers"]) > 0:

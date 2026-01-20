@@ -105,10 +105,10 @@ generate_router(12, AS_Y, ibgp_peers=[10,13,14])
 generate_router(13, AS_Y, ibgp_peers=[10,11,12,14])
 generate_router(14, AS_Y, ibgp_peers=[10,12,13])
 
-generate_router(15, AS_Z, ibgp_peers=[16,17])
+generate_router(15, AS_Z, ibgp_peers=[16,17,18])
 generate_router(16, AS_Z, ibgp_peers=[15,17,18], ebgp_peers=[{"peer": 6, "peer_as": AS_X, "relation": "peer"}]) 
-generate_router(17, AS_Z, ibgp_peers=[15,16,19])
-generate_router(18, AS_Z, ibgp_peers=[15,16,17,19,20], ebgp_peers=[{"peer": 7, "peer_as": AS_X, "relation": "provider"}])
+generate_router(17, AS_Z, ibgp_peers=[15,16,18,19])
+generate_router(18, AS_Z, ibgp_peers=[15,16,17,19,20], ebgp_peers=[{"peer": 7, "peer_as": AS_X, "relation": "provider"}]) # Router Reflector
 generate_router(19, AS_Z, ibgp_peers=[17,18,20])
 generate_router(20, AS_Z, ibgp_peers=[18,19])
 
