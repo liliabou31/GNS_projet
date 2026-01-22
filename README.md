@@ -63,9 +63,8 @@ Enfin, la fonction remplit un dictionnaire à deux niveaux qui ressemble à ceci
 
 ### map_uuids()
 
+Cette fonction sert de "détecteur de dossiers". Son rôle est de faire le lien entre le nom d'un routeur (ex: R1) et son emplacement physique sur le disque dur, car GNS3 n'utilise pas les noms des routeurs pour nommer ses dossiers, mais des identifiants complexes (UUID).
 
+La fonction commence par lister tous les dossiers présents dans le répertoire Dynamips du projet. À l'intérieur de chaque dossier (qui correspond à une instance de routeur), elle s'introduit dans le sous-répertoire /configs/ pour localiser le fichier de configuration de démarrage (se terminant par _startup-config.cfg).
 
-
-
-
-
+Pour identifier à quel routeur appartient ce fichier, elle l'ouvre et scanne les premières lignes à la recherche de la commande hostname. Si elle lit hostname R1, elle comprend que ce dossier spécifique appartient au routeur R1. Enfin, elle construit et retourne un dictionnaire de correspondance (mapping) qui associe chaque nom de routeur au chemin absolu de son fichier de configuration.
