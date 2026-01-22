@@ -1,3 +1,5 @@
+# AJOUTER L'EXPLICATION DU BLOC AJOUTE SUR GNS.PY !!!!!!!
+
 Hello,
 le script routeurs.py a pour rôle de créer le fichier json / le remplir en appelant la fonction generate_routers.
 
@@ -63,8 +65,32 @@ Enfin, la fonction remplit un dictionnaire à deux niveaux qui ressemble à ceci
 
 ### map_uuids()
 
-Cette fonction sert de "détecteur de dossiers". Son rôle est de faire le lien entre le nom d'un routeur (ex: R1) et son emplacement physique sur le disque dur, car GNS3 n'utilise pas les noms des routeurs pour nommer ses dossiers, mais des identifiants complexes (UUID).
+Cette fonction identifie l'emplacement physique des fichiers de configuration sur l'ordinateur en faisant correspondre le nom de chaque routeur à son dossier technique GNS3 (UUID).
 
-La fonction commence par lister tous les dossiers présents dans le répertoire Dynamips du projet. À l'intérieur de chaque dossier (qui correspond à une instance de routeur), elle s'introduit dans le sous-répertoire `/configs/` pour localiser le fichier de configuration de démarrage (se terminant par `_startup-config.cfg`).
+### section CHARGEMENT DES DONNÉES
 
-Pour identifier à quel routeur appartient ce fichier, elle l'ouvre et scanne les premières lignes à la recherche de la commande hostname. Si elle lit hostname R1, elle comprend que ce dossier spécifique appartient au routeur R1. Enfin, elle construit et retourne un dictionnaire de correspondance (mapping) qui associe chaque nom de routeur au chemin absolu de son fichier de configuration.
+* chargement le fichier routers.json dans _data_
+* stockage les branchements obtenus grâce à get_real_topology() dans _real_links_
+* stockage les chemins d'accès directs aux fichiers de configuration de chaque routeur dans _uuid_mapping_
+
+### Section GÉNÉRATION DES CONFIGS
+
+Cette section finale a pour rôle de transformer les données logiques en fichiers .cfg prêt à être chargés par GNS3.
+
+Tout d'abord, par précaution, le script vérifie la présece du routeur dans le projet GNS3. Ainsi, si le routeur est défini dans le code mais absent du schéma il sera ignoré. 
+
+→ Adressage et Routage Interne (IGP)
+
+Le script va configurer les bases de chaque équipement : Loopback et Unicast-Routing en activant l'IPv6 et la configuration de l'interface de gestion, et les interfaces physiques, en activant le protocol de routage interne correspondant (OSPF ou RIP). 
+
+→ BGP et Politiques de Routage
+
+Le script automatise la configuration BGP : 
+
+* Relations commerciales : Il applique des _route-map_ (FROM_CLIENT, FROM_PROV, etc.) en gérant les priorités via le __Local_Pref__ et le marquage par les __Communities__.
+* Filtrage de Transit : Implémentation des règles de filtrage pour s'assurer qu'un fournisseur ne reçoive que les routes des clients. 
+* Router Reflector : Pour les RR, le script active automatiquement la fonction "route-reflector-client".
+
+→ Automatisation du "Next-Hop-Self"
+
+Le script applique la commande "next-hop-self" uniquement si le routeur possède des voisins eBGP. Cela garantit que les routes externes sont bien diffusées et joignables à l'intérieur de l'AS.
