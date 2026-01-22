@@ -11,7 +11,7 @@ pour ping apres entre un routeur ebgp de asX et un routeur de asY faut faire : p
 
 ### fonction generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None) : 
 
-→ Génération de l'identité 
+__→ Génération de l'identité__ 
 
 Chaque routeur reçoit : 
 * Router-ID BGP : Basé sur l'AS number pour éviter les collisions
@@ -20,13 +20,12 @@ Chaque routeur reçoit :
 
 Pour chaque voisin du routeur, la fonction génère une clé qui représente le lien entre les deux routeurs : tuple(sorted([hostname, peer]))
 
-Si le lien est nouveau, (not in internal_assignements), la fonction va aller regarder link_counter pour l'AS concerné et génère un préfixe IPv6 unique : 
+Si le lien est nouveau, (not in internal_assignements), la fonction va aller regarder link_counter pour l'AS concerné et génère un préfixe IPv6 unique : "2001:192:{pref}:{sid}::" 
 
-"2001:192:{pref}:{sid}::" 
 * "pref" est un nombre fixe associé à l'AS (si as_number = AS_X, pref = 168 par exemple) 
 * "sid" est déterminé avec link_counter : link_counter = {AS_X: 1, AS_Y: 1, AS_Z: 1, "EBGP": 1}, on incrémante par 1 à chaque fois qu'on attribue un "sid"
 
-Détermination de l'IP 
+__→ Détermination de l'IP__
 
 Pour les ibgp_peers : 
 La fonction prends l'adresse du sous-réseau généré précédemment, et sur le segment donné, le routeur avec le nom le plus grand prend le suffixe "::2" et celui avec le nom le plus petit prend le suffixe "::1".
