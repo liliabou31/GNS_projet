@@ -39,4 +39,33 @@ Enfin, on ajoute router dans le dictionnaire global data
 
 → La fin du script sert à faire les appels de configuration pour chaque routeur, puis d'écrire le fichier d'intention routers.json
 
+__→ Après chaque modifications du script, il est nécessaire de l'exécuter avant d'exécuter gns.py__
+
+
 ## gns.py 
+
+### fonction get_real_topology()
+
+Cette fonction a pour but de scanner automatiquement le schéma GNS3 pour identifier précisémeent quel routeur est connecté à quel autre et sur quel port. Cela permet de rendre le script capable de s'adapter au câblage réel fait dans GNS3.
+
+La fonction va d'abord ouvrir le fichier routers.json, puis va créer le dictionnaire nodes pour associer l'UUID de chaque routeur à son nom lisible 
+La boucle for link in conf['topology']['links'] parcours la liste topology/links et pour chaque câble trouvé, il identifie les deux routeurs aux extrémités (n1 et n2), et récupère le nom des interfaces où le câble est branché (p1 et p2). 
+ 
+La sous-fonction fix_if_name(name) normalise le nom des interfaces. En effet, GNS3 a tendance à écrire les noms de manière abrégé (par exemple f0/0), mais pour que la configuration Cisco fonctionne, il faut écrire le nom complet des interfaces. 
+Exemple : fix_if_name(f0/0) = FastEthernet0/0 ; fix_if_name(g1/0) = GigabitEthernet1/0
+
+Enfin, la fonction remplit un dictionnaire à deux niveaux qui ressemble à ceci : 
+
+{
+  "R1": { "R2": "FastEthernet0/0", "R3": "FastEthernet1/0" },
+  "R2": { "R1": "FastEthernet0/0" }
+}
+
+### map_uuids()
+
+
+
+
+
+
+
