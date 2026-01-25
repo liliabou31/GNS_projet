@@ -136,7 +136,6 @@ for router in data:
 
         # --- 6. PROCESSUS BGP ---
         f_out.write(f"router bgp {as_num}\n")
-        f_out.write(" bgp fast-external-fallover\n")
         f_out.write(f" bgp router-id {router['router_id_bgp']}\n")
         f_out.write(" bgp timers 5 15\n")
         f_out.write(" no bgp default ipv4-unicast\n")
