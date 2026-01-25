@@ -186,4 +186,6 @@ for router in data:
         f_out.write(f"  network {router['loopback']}\n")
         f_out.write(" exit-address-family\n!\nend\n")
 
-print("\n[FIN] Déploiement terminé. Pense à faire un 'Reload' dans GNS3.")
+
+print("\nDéploiement terminé.")
+
