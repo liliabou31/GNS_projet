@@ -122,18 +122,17 @@ for router in data:
         f_out.write("ip as-path access-list 1 permit ^$\n")
         f_out.write(f"ip community-list standard CLIENT_ONLY permit {as_num}:1\n!\n")
 
-        f_out.write(f"route-map FROM_CLIENT permit 10\n set community {as_num}:1\n set local-preference 200\n!\n")
-        f_out.write(f"route-map FROM_PROV permit 10\n set community {as_num}:3\n set local-preference 100\n!\n")
-        f_out.write(f"route-map FROM_PEER permit 10\n set community {as_num}:2\n set local-preference 150\n!\n")
+        f_out.write(f"route-map FROM_CLIENT permit 10\n set community {as_num}:200\n set local-preference 200\n!\n")
+        f_out.write(f"route-map FROM_PROV permit 10\n set community {as_num}:100\n set local-preference 100\n!\n")
+        f_out.write(f"route-map FROM_PEER permit 10\n set community {as_num}:150\n set local-preference 150\n!\n")
 
-        f_out.write("route-map TO_PROVIDER permit 10\n match community CLIENT_ONLY\n") 
+        f_out.write("route-map TO_PROVIDER permit 10\n match community CLIENT_ONLY\n") #allow only my client's and my as' routes to be shared
         f_out.write("route-map TO_PROVIDER permit 20\n match as-path 1\n!\n")
         
-        f_out.write("route-map TO_PEER permit 10\n match community CLIENT_ONLY\n") 
+        f_out.write("route-map TO_PEER permit 10\n match community CLIENT_ONLY\n") #idem
         f_out.write("route-map TO_PEER permit 20\n match as-path 1\n!\n")
-        f_out.write("route-map TO_PEER permit 30\n!\n") 
 
-        f_out.write("route-map TO_CLIENT permit 10\n!\n")
+        f_out.write("route-map TO_CLIENT permit 10\n!\n") #all my routes are shared (cause i'm getting payed)
 
         # --- 6. PROCESSUS BGP ---
         f_out.write(f"router bgp {as_num}\n")
