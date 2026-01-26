@@ -25,7 +25,7 @@ Pour chaque voisin du routeur, la fonction génère une clé qui représente le 
 Si le lien est nouveau, (not in internal_assignements), la fonction va aller regarder link_counter pour l'AS concerné et génère un préfixe IPv6 unique : "2001:192:{pref}:{sid}::" 
 
 * "pref" est un nombre fixe associé à l'AS (si as_number = AS_X, pref = 168 par exemple) 
-* "sid" est déterminé avec link_counter : link_counter = {AS_X: 1, AS_Y: 1, AS_Z: 1, "EBGP": 1}, on incrémante par 1 à chaque fois qu'on attribue un "sid"
+* "sid" est déterminé avec link_counter : link_counter = {AS_X: 1, AS_Y: 1, AS_Z: 1, "EBGP": 1}, on incrémente par 1 à chaque fois qu'on attribue un "sid"
 
 __→ Détermination de l'IP__
 
