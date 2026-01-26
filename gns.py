@@ -58,10 +58,13 @@ with open("routers.json") as f:
 real_links = get_real_topology()
 uuid_mapping = map_uuids()
 
+asbr_ips = [r["loopback"].split("/")[0] for r in data if len(r["routing"]["ebgp_peers"]) > 0]
+
 # --- GÉNÉRATION ---
 for router in data:
     name = router["name"]
     as_num = router["as_number"]
+    is_asbr = len(router["routing"]["ebgp_peers"]) > 0
     if name not in uuid_mapping:
         print(f"[SKIP] {name} non trouvé")
         continue
@@ -72,13 +75,19 @@ for router in data:
         f_out.write(f"hostname {name}\n")
         f_out.write("ipv6 unicast-routing\n")
         f_out.write("ip bgp-community new-format\n!\n")
-
-        # --- 1. DÉFINITION DE L'ACL DE SÉCURITÉ ---
-        f_out.write("ipv6 access-list BLOCK_EXTERNAL_PING\n")
-        f_out.write(" deny icmp any any echo-request\n")
-        f_out.write(" sequence 20 permit tcp any any eq 179\n") # Autorise BGP
-        f_out.write(" sequence 30 permit tcp any eq 179 any\n")
-        f_out.write(" sequence 40 permit ipv6 any any\n!\n")
+        # --- 1. FILTRE ICMP ---
+        if is_asbr:
+            f_out.write("ipv6 access-list FILTER_EXTERNAL_PING\n")
+            # 1. Autorise les réponses aux pings lancés par l'ASBR lui-même
+            f_out.write(" permit icmp any any echo-reply\n")
+            # 2. Autorise les voisins à pinger les Loopbacks des Border (ASBR)
+            for ip in asbr_ips:
+                f_out.write(f" permit icmp any host {ip} echo-request\n")
+            # 3. BLOQUE tout le reste des pings vers l'interne
+            f_out.write(" deny icmp any any echo-request\n")
+            # 4. Autorise tout le reste du trafic (BGP, OSPF, Data)
+            f_out.write(" permit ipv6 any any\n")
+            f_out.write("!\n")
 
         # --- 2. LOOPBACK ---
         f_out.write("interface Loopback0\n")
@@ -97,11 +106,7 @@ for router in data:
                 f_out.write(f"interface {real_if_name}\n")
                 f_out.write(" no ip address\n ipv6 enable\n")
                 f_out.write(f" ipv6 address {iface_json['local_ip']}\n")
-                f_out.write(" duplex full\n") # Évite les logs d'erreur
-                
-                # Appliquer l'ACL sur les liens EBGP uniquement
-                is_ebgp = any(p["peer"] == peer_name for p in router["routing"]["ebgp_peers"])
-                if is_ebgp:
+                if iface_json.get("type") == "ebgp":
                     f_out.write(" ipv6 traffic-filter BLOCK_EXTERNAL_PING in\n")
                 
                 f_out.write(" no shutdown\n")
@@ -134,6 +139,18 @@ for router in data:
 
         f_out.write("route-map TO_CLIENT permit 10\n!\n") #all my routes are shared (cause i'm getting payed)
 
+        # --- PREFIX-LIST : autoriser uniquement les ASBR ---
+        asbr_list = [r["loopback"].split("/")[0] for r in data if len(r["routing"]["ebgp_peers"]) > 0]
+
+        f_out.write("ipv6 prefix-list PL-ASBR\n")
+        for i, lb in enumerate(asbr_list, start=5):
+            f_out.write(f" seq {i} permit {lb}\n")
+        f_out.write("!\n")
+
+        f_out.write("route-map FROM_PROVIDER_FILTER permit 10\n")
+        f_out.write(" match ipv6 address prefix-list PL-ASBR\n")
+        f_out.write("!\n")
+        
         # --- 6. PROCESSUS BGP ---
         f_out.write(f"router bgp {as_num}\n")
         f_out.write(f" bgp router-id {router['router_id_bgp']}\n")
@@ -176,7 +193,7 @@ for router in data:
                 f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_CLIENT in\n")
                 f_out.write(f"  neighbor {p_ip_ebgp} route-map TO_CLIENT out\n")
             elif rel == "provider":
-                f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_PROV in\n")
+                f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_PROVIDER_FILTER in\n")
                 f_out.write(f"  neighbor {p_ip_ebgp} route-map TO_PROVIDER out\n")
             elif rel == "peer":
                 f_out.write(f"  neighbor {p_ip_ebgp} route-map FROM_PEER in\n")
@@ -187,4 +204,3 @@ for router in data:
 
 
 print("\nDéploiement terminé.")
-
