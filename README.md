@@ -1,4 +1,8 @@
-# AJOUTER L'EXPLICATION DU BLOC AJOUTE SUR GNS.PY !!!!!!!
+Bienvenue au Projet Routage Réseaux réalisé par ABDERRAZIK Aida, BOUBAKER Lilia, NGUYEN Huy Hung, MINGONDZA MBOUNGOU Joel.
+
+# Exécution du projet
+
+Pour mettre en service l'infrastructure, commencez par reproduire la topologie réseau telle qu'elle est illustrée dans le fichier <code>topology.jpeg</code>. Avant de lancer le script <code>gns.py</code>, vous devez impérativement renseigner les chemins d'accès locaux pour les variables <code>PROJECT_FILE</code> et <code>DYNAMIPS_PATH</code>. Une fois ces modifications effectuées, l'exécution du script générera et injectera automatiquement les fichiers de configuration dans les répertoires du projet. Votre réseau est désormais prêt!
 
 # Fonctionnement des scripts en détail
 
