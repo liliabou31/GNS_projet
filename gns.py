@@ -107,7 +107,7 @@ for router in data:
                 f_out.write(" no ip address\n ipv6 enable\n")
                 f_out.write(f" ipv6 address {iface_json['local_ip']}\n")
                 if iface_json.get("type") == "ebgp":
-                    f_out.write(" ipv6 traffic-filter BLOCK_EXTERNAL_PING in\n")
+                    f_out.write(" ipv6 traffic-filter FILTER_EXTERNAL_PING in\n")
                 
                 f_out.write(" no shutdown\n")
                 if iface_json.get("type") == "internal":
@@ -144,17 +144,20 @@ for router in data:
 
         f_out.write("ipv6 prefix-list PL-ASBR\n")
         for i, lb in enumerate(asbr_list, start=5):
-            f_out.write(f" seq {i} permit {lb}\n")
+            # On ajoute "le 128" pour accepter l'IP précise même si elle est annoncée dans un bloc
+            f_out.write(f" seq {i} permit {lb}/64 le 128\n")
         f_out.write("!\n")
 
         f_out.write("route-map FROM_PROVIDER_FILTER permit 10\n")
         f_out.write(" match ipv6 address prefix-list PL-ASBR\n")
         f_out.write("!\n")
-        
+
         # --- 6. PROCESSUS BGP ---
         f_out.write(f"router bgp {as_num}\n")
         f_out.write(f" bgp router-id {router['router_id_bgp']}\n")
         f_out.write(" bgp timers 5 15\n")
+        #f_out.write(" bgp fast-external-fallover\n")
+        f_out.write(" bgp nexthop trigger delay 1\n")
         f_out.write(" no bgp default ipv4-unicast\n")
 
         # Définition Voisins IBGP
