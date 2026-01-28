@@ -104,11 +104,11 @@ for router in data:
             if name in real_links and peer_name in real_links[name]:
                 real_if_name = real_links[name][peer_name]
                 f_out.write(f"interface {real_if_name}\n")
+                f_out.write(" duplex full\n")
                 f_out.write(" no ip address\n ipv6 enable\n")
                 f_out.write(f" ipv6 address {iface_json['local_ip']}\n")
                 if iface_json.get("type") == "ebgp":
                     f_out.write(" ipv6 traffic-filter FILTER_EXTERNAL_PING in\n")
-                
                 f_out.write(" no shutdown\n")
                 if iface_json.get("type") == "internal":
                     if router["routing"]["igp"] == "RIP":
@@ -139,24 +139,12 @@ for router in data:
 
         f_out.write("route-map TO_CLIENT permit 10\n!\n") #all my routes are shared (cause i'm getting payed)
 
-        # --- PREFIX-LIST : autoriser uniquement les ASBR ---
-        asbr_list = [r["loopback"].split("/")[0] for r in data if len(r["routing"]["ebgp_peers"]) > 0]
-
-        f_out.write("ipv6 prefix-list PL-ASBR\n")
-        for i, lb in enumerate(asbr_list, start=5):
-            # On ajoute "le 128" pour accepter l'IP précise même si elle est annoncée dans un bloc
-            f_out.write(f" seq {i} permit {lb}/64 le 128\n")
-        f_out.write("!\n")
-
         f_out.write("route-map FROM_PROVIDER_FILTER permit 10\n")
-        f_out.write(" match ipv6 address prefix-list PL-ASBR\n")
-        f_out.write("!\n")
 
         # --- 6. PROCESSUS BGP ---
         f_out.write(f"router bgp {as_num}\n")
         f_out.write(f" bgp router-id {router['router_id_bgp']}\n")
         f_out.write(" bgp timers 5 15\n")
-        #f_out.write(" bgp fast-external-fallover\n")
         f_out.write(" bgp nexthop trigger delay 1\n")
         f_out.write(" no bgp default ipv4-unicast\n")
 
