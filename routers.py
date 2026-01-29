@@ -35,7 +35,7 @@ def generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None):
         }
     }
 
-    # --- Interfaces Internes ---
+    # Interfaces Internes
     for peer in ibgp_peers:
         peer_name = f"R{peer}"
         link_key = tuple(sorted([name, f"R{peer}"]))
@@ -55,12 +55,12 @@ def generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None):
         peer_ip = f"{subnet}2/64" if name < peer_name else f"{subnet}1/64"
         router["interfaces"].append({"peer": peer_name, "local_ip": local_ip, "peer_ip": peer_ip, "type": "internal"})
 
-# --- Interfaces eBGP ---
+# Interfaces eBGP
     for peer in ebgp_peers:
         peer_name = f"R{peer['peer']}"
         link_key = tuple(sorted([name, peer_name]))
         
-        # 1. Gestion du subnet (une seule fois)
+        # Gestion du subnet (une seule fois)
         if link_key not in ebgp_assignments:
             sid = link_counter["EBGP"]
             ebgp_assignments[link_key] = f"2001:192:170:{sid}::"
@@ -70,7 +70,7 @@ def generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None):
         local_ip = f"{subnet}1/64" if name < peer_name else f"{subnet}2/64"
         peer_ip = f"{subnet}2/64" if name < peer_name else f"{subnet}1/64"
         
-        # 2. Ajout de l'interface physique 
+        # Ajout de l'interface physique 
         router["interfaces"].append({
             "peer": peer_name, 
             "local_ip": local_ip, 
@@ -78,17 +78,17 @@ def generate_router(router_num, as_number, ibgp_peers=None, ebgp_peers=None):
             "type": "ebgp"
         })
         
-        # 3. Ajout du voisin BGP avec sa relation (UNE SEULE FOIS)
+        # Ajout du voisin BGP avec sa relation (UNE SEULE FOIS)
         router["routing"]["ebgp_peers"].append({
             "peer": peer_name, 
             "peer_as": peer["peer_as"],
             "relation": peer.get("relation", "provider")
         })
 
-    # FIN DE LA FONCTION : On enregistre le routeur dans le dictionnaire global
+    # On enregistre le routeur dans le dictionnaire global
     data[name] = router
 
-# --- Appels de configuration ---
+# Appels de configuration
 generate_router(1, AS_X, ibgp_peers=[2,3,5])
 generate_router(2, AS_X, ibgp_peers=[1,3,4,5])
 generate_router(3, AS_X, ibgp_peers=[1,2,5])
