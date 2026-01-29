@@ -1,7 +1,7 @@
 import json
 import os
 
-# --- CONFIGURATION ---
+# CONFIGURATION
 win_user = "lilia"
 project_name = "projet_test"
 PROJECT_FILE = f"/mnt/c/Users/{win_user}/GNS3/projects/{project_name}/{project_name}.gns3"
@@ -51,7 +51,7 @@ def map_uuids():
                                 mapping[r_name] = full_p
     return mapping
 
-# --- CHARGEMENT ---
+# CHARGEMENT
 with open("routers.json") as f:
     data = json.load(f)
 
@@ -60,7 +60,7 @@ uuid_mapping = map_uuids()
 
 asbr_ips = [r["loopback"].split("/")[0] for r in data if len(r["routing"]["ebgp_peers"]) > 0]
 
-# --- GÉNÉRATION ---
+# GÉNÉRATION 
 for router in data:
     name = router["name"]
     as_num = router["as_number"]
@@ -75,21 +75,17 @@ for router in data:
         f_out.write(f"hostname {name}\n")
         f_out.write("ipv6 unicast-routing\n")
         f_out.write("ip bgp-community new-format\n!\n")
-        # --- 1. FILTRE ICMP ---
+        # FILTRE ICMP
         if is_asbr:
             f_out.write("ipv6 access-list FILTER_EXTERNAL_PING\n")
-            # 1. Autorise les réponses aux pings lancés par l'ASBR lui-même
             f_out.write(" permit icmp any any echo-reply\n")
-            # 2. Autorise les voisins à pinger les Loopbacks des Border (ASBR)
             for ip in asbr_ips:
                 f_out.write(f" permit icmp any host {ip} echo-request\n")
-            # 3. BLOQUE tout le reste des pings vers l'interne
             f_out.write(" deny icmp any any echo-request\n")
-            # 4. Autorise tout le reste du trafic (BGP, OSPF, Data)
             f_out.write(" permit ipv6 any any\n")
             f_out.write("!\n")
 
-        # --- 2. LOOPBACK ---
+        # LOOPBACK
         f_out.write("interface Loopback0\n")
         f_out.write(f" ipv6 address {router['loopback']}\n")
         if router["routing"]["igp"] == "RIP":
@@ -98,7 +94,7 @@ for router in data:
             f_out.write(f" ipv6 ospf {OSPF_PID} area 0\n")
         f_out.write("!\n")
 
-        # --- 3. INTERFACES PHYSIQUES ---
+        # INTERFACES PHYSIQUES
         for iface_json in router["interfaces"]:
             peer_name = iface_json["peer"]
             if name in real_links and peer_name in real_links[name]:
@@ -117,13 +113,13 @@ for router in data:
                         f_out.write(f" ipv6 ospf {OSPF_PID} area 0\n")
                 f_out.write("!\n")
 
-        # --- 4. PROCESSUS IGP ---
+        # PROCESSUS IGP
         if router["routing"]["igp"] == "OSPF":
             f_out.write(f"ipv6 router ospf {OSPF_PID}\n router-id {router['router_id_bgp']}\nexit\n!\n")
         elif router["routing"]["igp"] == "RIP":
             f_out.write(f"ipv6 router rip {RIP_NAME}\nexit\n!\n")
 
-        # --- 5. POLITIQUES BGP (COMMUNITIES) ---
+        # COMMUNITIES
         f_out.write("ip as-path access-list 1 permit ^$\n")
         f_out.write(f"ip community-list standard CLIENT_ONLY permit {as_num}:1\n!\n")
 
@@ -131,15 +127,15 @@ for router in data:
         f_out.write(f"route-map FROM_PROVIDER permit 10\n set community {as_num}:100\n set local-preference 100\n!\n")
         f_out.write(f"route-map FROM_PEER permit 10\n set community {as_num}:150\n set local-preference 150\n!\n")
 
-        f_out.write("route-map TO_PROVIDER permit 10\n match community CLIENT_ONLY\n") #allow only my client's and my as' routes to be shared
+        f_out.write("route-map TO_PROVIDER permit 10\n match community CLIENT_ONLY\n") 
         f_out.write("route-map TO_PROVIDER permit 20\n match as-path 1\n!\n")
         
-        f_out.write("route-map TO_PEER permit 10\n match community CLIENT_ONLY\n") #idem
+        f_out.write("route-map TO_PEER permit 10\n match community CLIENT_ONLY\n")
         f_out.write("route-map TO_PEER permit 20\n match as-path 1\n!\n")
 
-        f_out.write("route-map TO_CLIENT permit 10\n!\n") #all my routes are shared (cause i'm getting payed)
+        f_out.write("route-map TO_CLIENT permit 10\n!\n") 
 
-        # --- 6. PROCESSUS BGP ---
+        # PROCESSUS BGP
         f_out.write(f"router bgp {as_num}\n")
         f_out.write(f" bgp router-id {router['router_id_bgp']}\n")
         f_out.write(" bgp timers 5 15\n")
@@ -158,7 +154,7 @@ for router in data:
             p_ip_ebgp = iface["peer_ip"].split("/")[0]
             f_out.write(f" neighbor {p_ip_ebgp} remote-as {e_peer['peer_as']}\n")
 
-        # --- 7. ADDRESS-FAMILY IPV6 ---
+        # ADDRESS-FAMILY IPV6
         f_out.write(" address-family ipv6 unicast\n")
         
         for peer in router["routing"]["ibgp_peers"]:
