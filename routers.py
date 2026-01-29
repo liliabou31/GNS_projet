@@ -5,7 +5,7 @@ JSON_FILE = "routers.json"
 data = {}
 
 AS_X, AS_Y, AS_Z= 10, 20, 30
-AS_IGP = {AS_X: "RIP", AS_Y: "OSPF", AS_Z:"RIP"}
+AS_IGP = {AS_X: "RIP", AS_Y: "OSPF", AS_Z:"OSPF"}
 
 link_counter = {AS_X: 1, AS_Y: 1, AS_Z: 1, "EBGP": 1}
 internal_assignments = {}
